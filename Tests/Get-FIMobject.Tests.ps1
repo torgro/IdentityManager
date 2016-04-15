@@ -5,14 +5,13 @@ $sut = (Split-Path -Leaf $MyInvocation.MyCommand.Path).Replace(".Tests.", ".")
 
 $PSBoundParameters.clear()
 
-import-module .\PowerFIM.psd1 -verbose:$false
+Import-module .\PowerFIM.psd1 -verbose:$false
 Import-Module .\FIMmodule\FIMmodule.psd1 -Scope Global -verbose:$false
 
 Describe "Get-FIMobject" {
     Context "Parameter validation" {
 
         Mock Export-FIMConfig {$null}
-        Mock Assert-FIMsnapin {} -Verifiable
 
         It "No parameters should throw" {
             { Get-FIMobject } | Should throw

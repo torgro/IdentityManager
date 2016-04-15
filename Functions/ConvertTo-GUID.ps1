@@ -14,7 +14,7 @@ BEGIN
     
 PROCESS
 { 
-    Foreach ($NewGUID in $GUID)
+    foreach ($NewGUID in $GUID)
     { 
         if ($NewGUID.ToLower().Contains("urn:uuid:"))
         { 
