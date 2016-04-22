@@ -8,6 +8,8 @@ Param(
     [switch]$Minor
     ,
     [switch]$LoadModule
+    ,
+    [string]$description = "Work with Microsoft Identity Manager with Powershell"
 )
 cd C:\Users\Tore\Dropbox\SourceTreeRepros\IdentityManager -ErrorAction SilentlyContinue
 $F = $MyInvocation.InvocationName
@@ -15,20 +17,21 @@ Write-Verbose -Message "$F - Starting build, getting files"
 
 if(Get-Module -Name IdentityManager)
 {
-    Write-Verbose "$F -  Removing FIMautomation snapIn and Powerfim module"
+    Write-Verbose "$F -  Removing FIMautomation snapIn and IdentityManager module"
     Remove-FIMsnapin -Verbose
     Remove-Module IdentityManager -Verbose:$false
 }
     
 $fileList = Get-ChildItem -Filter .\functions\*.ps1 | where name -NotLike "*Tests*"
 
-$ModuleName = (Get-ChildItem -Path $ModuleFileName -ErrorAction SilentlyContinue).BaseName
+#$ModuleName = (Get-ChildItem -Path $ModuleFileName -ErrorAction SilentlyContinue).BaseName
+$ModuleName = $moduleFileName -split "." | Select-Object -first 1
 Write-Verbose -Message "$f -  Modulename is $ModuleName"
 
 $ExportedFunctions = New-Object System.Collections.ArrayList
 $fileList | foreach {
     Write-Verbose -Message "$F -  Function = $($_.BaseName) added"
-    [void]$ExportedFunctions.Add($_.BaseName)
+    $null = $ExportedFunctions.Add($_.BaseName)
 }
 
 $ModuleLevelFunctions = $null
@@ -51,7 +54,7 @@ Write-Verbose -Message "$f -  Constructing content of module file"
 [string]$ModuleFile = ""
 foreach($file in $fileList)
 {
-    $filecontent = Get-Content -Path $file.FullName -raw
+    $filecontent = Get-Content -Path $file.FullName -Raw -Encoding UTF8
     $filecontent = "$filecontent`n`n"
     $ModuleFile += $filecontent
 }
@@ -89,8 +92,7 @@ Param(
         Write-Verbose -Message "$F -  Bumping Major version"
         $build = $CurrentVersion.Build
         $ma = $CurrentVersion.Major + 1
-        $mi = $CurrentVersion.Minor
-        $newVersion = New-Object System.Version("$Ma.$Mi.$build.0")
+        $mi = $CurrentVersion.Minor        
     }
 
     if($Minor)
@@ -99,7 +101,6 @@ Param(
         $build = $CurrentVersion.Build
         $ma = $CurrentVersion.Major
         $mi = $CurrentVersion.Minor + 1
-        $newVersion = New-Object System.Version("$Ma.$Mi.$build.0")
     }
 
     if($Minor -and $Major)
@@ -108,7 +109,6 @@ Param(
         $build = $CurrentVersion.Build
         $ma = $CurrentVersion.Major + 1
         $mi = $CurrentVersion.Minor + 1
-        $newVersion = New-Object System.Version("$Ma.$Mi.$build.0")
     }
 
     if(-not $Minor -and -not $Major)
@@ -117,8 +117,9 @@ Param(
         $build = $CurrentVersion.Build + 1
         $ma = $CurrentVersion.Major
         $mi = $CurrentVersion.Minor
-        $newVersion = New-Object System.Version("$Ma.$Mi.$build.0")
     }
+    
+    $newVersion = New-Object System.Version("$Ma.$Mi.$build.0")
     return $newVersion
 }
 
@@ -164,17 +165,23 @@ if((Test-Path -Path $ManifestName -ErrorAction SilentlyContinue) -eq $true)
 }
 
 Write-Verbose -Message "$f -  Creating manifestfile"
-$New_moduleManifest = @{
-    Path        = $ManifestName
-    Author      = "Tore Grøneng @toregroneng tore@firstpoint.no"
-    CompanyName = "NA"
+
+$newModuleManifest = @{
+    Path = "$PSScriptRoot\$ManifestName"
+    Author = "Tore Grøneng @toregroneng tore@firstpoint.no"
+    Copyright = "(c) 2015 Tore Grøneng @toregroneng tore@firstpoint.no"
+    CompanyName = "Firstpoint AS"
     ModuleVersion = $ver.ToString()
     FunctionsToExport = $ExportedFunctions
-    RootModule = $ModuleFileName
-
+    RootModule = "$ModuleFileName"
+    Description = "$description"
+    PowerShellVersion = "4.0"
+    ProjectUri = "https://github.com/torgro/IdentityManager"
 }
-New-ModuleManifest @New_moduleManifest -NestedModules @("FIMmodule\FIMmodule.psd1")
-Write-Verbose -Message "$f -  Reading back content to contert to UTF8 (content management tracking)"
+
+New-ModuleManifest @newModuleManifest -NestedModules @("FIMmodule\FIMmodule.psd1")
+
+Write-Verbose -Message "$f -  Reading back content to convert to UTF8 (content management tracking)"
 Set-Content -Path $ManifestName -Value (Get-Content -Path $ManifestName -Raw) -Encoding UTF8
 
 $Answer = "n"
