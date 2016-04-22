@@ -100,7 +100,7 @@ Process
 
         Write-Verbose -Message "$f -  Running Export-FIMConfig cmdlet"
         $Result = $null
-        $Result = Export-FIMConfig @splat | Out-FIMAttribute
+        $Result = Export-FIMConfig @splat | Out-IMAttribute
        
         if($Result -ne $null)
         {

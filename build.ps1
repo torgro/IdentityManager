@@ -1,5 +1,4 @@
-﻿#build module script
-[cmdletbinding()]
+﻿[cmdletbinding()]
 Param(
     [string]$ModuleFileName = "IdentityManager.psm1"
     ,
@@ -11,6 +10,9 @@ Param(
     ,
     [string]$description = "Work with Microsoft Identity Manager with Powershell"
 )
+END{
+
+write-verbose -message "ModuleFilename = $moduleFileName"
 cd C:\Users\Tore\Dropbox\SourceTreeRepros\IdentityManager -ErrorAction SilentlyContinue
 $F = $MyInvocation.InvocationName
 Write-Verbose -Message "$F - Starting build, getting files"
@@ -25,8 +27,14 @@ if(Get-Module -Name IdentityManager)
 $fileList = Get-ChildItem -Filter .\functions\*.ps1 | where name -NotLike "*Tests*"
 
 #$ModuleName = (Get-ChildItem -Path $ModuleFileName -ErrorAction SilentlyContinue).BaseName
-$ModuleName = $moduleFileName -split "." | Select-Object -first 1
+$ModuleName = $ModuleFileName.Split('.') | Select-Object -first 1
 Write-Verbose -Message "$f -  Modulename is $ModuleName"
+
+if([string]::IsNullOrEmpty($moduleName))
+{
+    write-warning -message "Modulename is null or empty"
+    break
+}
 
 $ExportedFunctions = New-Object System.Collections.ArrayList
 $fileList | foreach {
@@ -209,3 +217,4 @@ else
 }
 
 Write-Verbose -Message "$f - END"
+}

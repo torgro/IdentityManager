@@ -134,7 +134,7 @@ Process
 
         Write-Verbose -Message "$f -  Running Export-FIMConfig cmdlet"
         $Result = $null
-        $Result = Export-FIMConfig @splat | Out-FIMAttribute
+        $Result = Export-FIMConfig @splat | Out-IMAttribute
        
         if($Result -ne $null)
         {
@@ -157,8 +157,9 @@ End
 
 function Get-IMPerson
 {
-[cmdletbinding()]
+[cmdletbinding(DefaultParameterSetName="None")]
 Param(
+    [Parameter(ParameterSetName='ByDisplayName')]
     [string]$DisplayName
     ,
     [Parameter(ParameterSetName='ByObjectID')]
@@ -176,8 +177,10 @@ Param(
     [Parameter(ParameterSetName='ByOrgUnit')]
     [string]$OrgUnitCode
     ,
+    [Parameter(ParameterSetName='ByAttribute')]
     [string]$Attribute
     ,
+    [Parameter(ParameterSetName='ByAttribute')]
     [string]$AttributeValue
     ,
     [pscredential]$Credential
@@ -342,6 +345,64 @@ END
 }
 }
 
+Function New-IMImportChange
+{
+[cmdletbinding()]
+[outputtype([Microsoft.ResourceManagement.Automation.ObjectModel.ImportChange])]
+Param(
+    [Parameter(Mandatory=$true)]
+    [string]$AttributeName
+    ,
+    [Parameter(Mandatory=$true)]
+    [string]$AttributeValue
+    ,
+    [string]$Locale = "Invariant"
+    ,
+    [Microsoft.ResourceManagement.Automation.ObjectModel.ImportOperation]
+    $Operation = [Microsoft.ResourceManagement.Automation.ObjectModel.ImportOperation]::Add
+    ,
+    [bool]$FullyResolved
+)
+    $f = $MyInvocation.InvocationName
+    Write-Verbose -Message "$f - START"
+
+    Write-Verbose -Message "$f -  Creating ImportChange object for Attribute '$AttributeName'"
+    $change = New-Object Microsoft.ResourceManagement.Automation.ObjectModel.ImportChange
+    $change.Operation = $Operation
+    $change.AttributeName = $AttributeName
+    $change.AttributeValue = $AttributeValue
+    $change.Locale = $Locale
+    $change.FullyResolved = $true
+
+    Write-Verbose -Message "$f - END"
+    return $change
+}
+
+function New-IMimportObject
+{
+[CmdletBinding()]
+Param(
+    [Parameter(Mandatory=$true)]
+    [ValidateSet("ObjectTypeDescription","Person","Group","BindingDescription","AttributeTypeDescription","Set","WorkflowDefinition","SynchronizationRule","ManagementPolicyRule","DetectedRuleEntry","ActivityInformationConfiguration")]
+    [string]$ObjectType
+    ,
+    [Parameter(Mandatory=$true)]
+    [Microsoft.ResourceManagement.Automation.ObjectModel.ImportState]$ImportState
+)
+    $f = $MyInvocation.MyCommand.Name
+    Write-Verbose -Message "$f - START"
+
+    $importObject = New-Object -TypeName Microsoft.ResourceManagement.Automation.ObjectModel.ImportObject
+    $importObject.ObjectType = $ObjectType
+    $importObject.State = $ImportState
+    $importObject.SourceObjectIdentifier = [System.Guid]::NewGuid().ToString()
+
+    Write-Verbose -Message "$f -  Created ImportObject of type $ObjectType and state $ImportState"
+    $importObject
+
+    Write-Verbose -Message "$f - END"
+}
+
 function Out-IMattribute
 { 
 [cmdletbinding()]
@@ -447,17 +508,17 @@ Param()
 function Set-IMset
 { 
 [cmdletbinding(
-    DefaultParameterSetName='ByObject',
+    DefaultParameterSetName='ByObjectID',
     SupportsShouldProcess=$true
 )]
 Param(
-    [Parameter(Mandatory=$true, ValueFromPipeline, ParameterSetName='ByObject', Position=0)]
+    [Parameter(Mandatory=$false, ValueFromPipeline, ParameterSetName='ByObject', Position=0)]
     [Parameter(Mandatory=$false, ValueFromPipeline, ParameterSetName='WithFilterAndObject')]
     [Parameter(Mandatory=$false, ValueFromPipeline, ParameterSetName='WithXMLFilterAndObject')]
     [pscustomobject]
     $SetObject
     ,
-    [Parameter(Mandatory=$true,ParameterSetName='ByObjectID', Position=0)]
+    [Parameter(Mandatory=$false,ParameterSetName='ByObjectID', Position=0)]
     [Parameter(Mandatory=$false, ParameterSetName='WithFilterAndID')]
     [Parameter(Mandatory=$false, ParameterSetName='WithXMLFilterAndID')]
     [string]$ObjectID

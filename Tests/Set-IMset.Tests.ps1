@@ -1,15 +1,25 @@
-﻿$here = Split-Path -Parent $MyInvocation.MyCommand.Path
+﻿$here = Split-Path -Parent $MyInvocation.MyCommand.Path | split-path -parent
 $sut = (Split-Path -Leaf $MyInvocation.MyCommand.Path).Replace(".Tests.", ".")
-. "$here\$sut"
+. "$here\functions\$sut"
 
 $PSBoundParameters.clear()
 
-import-module .\PowerFIM.psd1 -verbose:$false
+Import-module .\IdentityManager.psd1 -verbose:$false
 Import-Module .\FIMmodule\FIMmodule.psd1 -Scope Global -verbose:$false
 
-#FIXME
-Describe "Set-FIMset" {
-
+Describe "Set-IMset" {
+        Mock Get-IMobject {
+            $obj = New-Object Microsoft.ResourceManagement.Automation.ObjectModel.ExportObject
+            $obj.ResourceManagementObject = New-Object -TypeName Microsoft.ResourceManagement.Automation.ObjectModel.ResourceManagementObject
+            $obj.ResourceManagementObject.ObjectType = "Set"
+            $attr = New-Object -TypeName Microsoft.ResourceManagement.Automation.ObjectModel.ResourceManagementAttribute
+            $attr.AttributeName = "ObjectType"
+            $attr.Value = "Set"
+            $null = $obj.ResourceManagementObject.ResourceManagementAttributes = (,$attr)
+            $obj = $obj | Out-IMattribute
+            return $obj
+        } -Verifiable
+        
         Context "Parameter validation" {
         $cmdlet = Get-Command -Name Get-IMset
         $ParamSetsCount = $cmdlet.ParameterSets.Count
@@ -63,65 +73,85 @@ Describe "Set-FIMset" {
    }
 
     Context "Parameter logic validation" {
-        Mock Get-IMobject { $null } -Verifiable
+        Mock Import-FIMConfig { $null } -Verifiable
+        Mock Get-IMset {
+            $obj = New-Object Microsoft.ResourceManagement.Automation.ObjectModel.ExportObject
+            $obj.ResourceManagementObject = New-Object -TypeName Microsoft.ResourceManagement.Automation.ObjectModel.ResourceManagementObject
+            $obj.ResourceManagementObject.ObjectType = "Set"
+            $attr = New-Object -TypeName Microsoft.ResourceManagement.Automation.ObjectModel.ResourceManagementAttribute
+            $attr.AttributeName = "ObjectType"
+            $attr.Value = "Set"
+            $null = $obj.ResourceManagementObject.ResourceManagementAttributes = (,$attr)
+            $obj = $obj | Out-IMattribute
+            return $obj
+        } -Verifiable
 
         It "No parameters should throw" {
-            { Get-IMset } | Should throw
+            { Set-IMset } | Should throw
         }
 
-        It "Should throw if both DisplayName and ObjectID is given" {
-            { Get-IMset -DisplayName "dummy set" -ObjectID "notpossibletoday"  } | Should throw
+        It "Should NOT throw if both DisplayName and ObjectID is given" {
+            { Set-IMset -DisplayName "dummy set" -ObjectID "notpossibletoday"  } | Should Not throw
         }
 
-        It "Should NOT throw if DisplayName is given" {
-            { Get-IMset -DisplayName "yall" } | Should not throw
+        It "Should throw if only DisplayName is given" {
+            { Set-IMset -DisplayName "yall" } | Should throw
         }
 
-        It "Should NOT throw if ObjectID is given" {
-            { Get-IMset -ObjectID "yall" } | Should not throw
+        It "Should throw if only ObjectID is given" {
+            { Set-IMset -ObjectID "yall" } | Should throw
         }
     }
 
     Context "Adding credentials" {
+        Mock Import-FIMConfig { $null } -Verifiable
+            
+        Mock Get-IMset {
+            $obj = New-Object Microsoft.ResourceManagement.Automation.ObjectModel.ExportObject
+            $obj.ResourceManagementObject = New-Object -TypeName Microsoft.ResourceManagement.Automation.ObjectModel.ResourceManagementObject
+            $obj.ResourceManagementObject.ObjectType = "Set"
+            $attr = New-Object -TypeName Microsoft.ResourceManagement.Automation.ObjectModel.ResourceManagementAttribute
+            $attr.AttributeName = "ObjectType"
+            $attr.Value = "Set"
+            $null = $obj.ResourceManagementObject.ResourceManagementAttributes = (,$attr)
+            $obj = $obj | Out-IMattribute
+            return $obj
+        } -Verifiable
         
-        Mock Get-IMobject { $null } -Verifiable 
-
         $cred = [System.Management.Automation.PSCredential]::Empty
 
         It "No credentials should not throw" {
-            { Get-IMset -DisplayName "yalla" } | Should Not throw
+            { Set-IMset -DisplayName "yalla" -ObjectId myguid } | Should Not throw
         }
 
-        It "Should only call Get-IMobject once" {
-            Assert-MockCalled Get-IMobject -Exactly 1
+        It "Should only call Get-IMset once" {
+            Assert-MockCalled Get-IMset -Exactly 1
         }
 
         It "With credentials should not throw" {
-            { Get-IMset -DisplayName "yalla" -Credential $cred } | Should Not throw
+            { Set-IMset -DisplayName "yalla" -ObjectId myguid -Credential $cred } | Should Not throw
         }        
     }
 
-    Context "Added credentials should be forwarded" {
-        Mock Get-IMobject {return $Credential} -Verifiable
-
-        $cred = [System.Management.Automation.PSCredential]::Empty
-
-        $testcred = Get-IMset -DisplayName yalla -Credential $cred
-
-        It "Should return an object" {
-            $testcred | Should not be $null
-        }
-
-        It "Should be of type PScredential" {
-            $testcred.GetType().Name | Should Be "PScredential"
-        }
-    }
-
     Context "Added URI should be forwareded" {
-        Mock Get-IMobject { return $uri } -Verifiable
         $uri = "http://imserver"
-
-        $testuri =  Get-IMset -DisplayName yalla -uri $uri
+        Mock Import-FIMConfig { return $uri } -Verifiable
+        
+        Mock Get-IMset {
+            $obj = New-Object Microsoft.ResourceManagement.Automation.ObjectModel.ExportObject
+            $obj.ResourceManagementObject = New-Object -TypeName Microsoft.ResourceManagement.Automation.ObjectModel.ResourceManagementObject
+            $obj.ResourceManagementObject.ObjectType = "Set"
+            $attr = New-Object -TypeName Microsoft.ResourceManagement.Automation.ObjectModel.ResourceManagementAttribute
+            $attr.AttributeName = "ObjectType"
+            $attr.Value = "Set"
+            $null = $obj.ResourceManagementObject.ResourceManagementAttributes = (,$attr)
+            $obj = $obj | Out-IMattribute
+            return $obj
+        } -Verifiable
+        
+        #Mock Write-Warning {$null}
+        
+        $testuri =  Set-IMset -DisplayName yalla -ObjectId myguid -uri $uri -Commit -WarningAction SilentlyContinue -WarningVariable warn
 
         It "Should return an object" {
             $testuri | Should not be $null
@@ -134,46 +164,13 @@ Describe "Set-FIMset" {
         It "Should have value '$uri'" {
             $testuri | should be $uri
         }
-    }
-
-    Context "Mock Get-IMobject with data" {
-       
-        Mock Get-IMobject {
-            $obj = New-Object Microsoft.ResourceManagement.Automation.ObjectModel.ExportObject
-            $obj.ResourceManagementObject = New-Object Microsoft.ResourceManagement.Automation.ObjectModel.ResourceManagementObject
-            $obj.ResourceManagementObject.ObjectType = "Set"
-            return $obj
-        }
-
-        $result = Get-IMset -DisplayName "yall"
         
-        It "Should return an ExportObject" {
-            #$script:fimobject -is [Microsoft.ResourceManagement.Automation.ObjectModel.ExportObject] | Should Be $True
-            $result -is [Microsoft.ResourceManagement.Automation.ObjectModel.ExportObject] | Should Be $true
+        It "Should raise a warning" {
+            $warn | Should Not Be $null
         }
-
-        It "Should return an ExportObject and a ResourceManagementObject of type ResourceManagementObject" {                
-            $result.ResourceManagementObject -is [Microsoft.ResourceManagement.Automation.ObjectModel.ResourceManagementObject] | Should Be $true
-        }
-
-        It "Should be of type AttributeTypeDescription" {                
-            $result.ResourceManagementObject.ObjectType | Should Be "Set"
-        }
-
-    }
-
-    Context "Mock Get-IMobject return null" {
         
-        Mock Get-IMobject {$null}
-
-        $result = Get-IMset -DisplayName "yall"
-
-        It "Should be equal to null" {                
-            $result | Should Be $null
-        }
-
-        It "Should not throw" {                
-            { Get-IMset -DisplayName "yall" } | Should not throw
+        It "Should raise a warning with message" {
+            $warn | Should Be "Set-IMset - Import-FIMconfig returned objects that need your attention"
         }
     }
 }

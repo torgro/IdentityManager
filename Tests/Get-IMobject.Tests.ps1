@@ -1,11 +1,11 @@
-﻿cd C:\Users\Tore\Dropbox\SourceTreeRepros\powerfim -ErrorAction SilentlyContinue
-$here = Split-Path -Parent $MyInvocation.MyCommand.Path
+﻿#cd C:\Users\Tore\Dropbox\SourceTreeRepros\powerfim -ErrorAction SilentlyContinue
+$here = Split-Path -Parent $MyInvocation.MyCommand.Path | split-path -parent
 $sut = (Split-Path -Leaf $MyInvocation.MyCommand.Path).Replace(".Tests.", ".")
-. "$here\$sut"
+. "$here\functions\$sut"
 
 $PSBoundParameters.clear()
 
-Import-module .\PowerFIM.psd1 -verbose:$false
+Import-module .\IdentityManager.psd1 -verbose:$false
 Import-Module .\FIMmodule\FIMmodule.psd1 -Scope Global -verbose:$false
 
 Describe "Get-IMobject" {
@@ -121,10 +121,6 @@ Describe "Get-IMobject" {
                 { Get-IMobject -ResourceType Set } | Should not throw
             }
 
-            It "Should not throw if ResourceType spvOrganizationalUnit is specified" {
-                { Get-IMobject -ResourceType spvOrganizationalUnit } | Should not throw
-            }
-
             It "Should not throw if ResourceType SynchronizationRule is specified" {
                 { Get-IMobject -ResourceType SynchronizationRule } | Should not throw
             }
@@ -148,7 +144,7 @@ Describe "Get-IMobject" {
         Mock Export-FIMConfig { $true } -Verifiable
         Mock Set-Variable {} -Verifiable
         
-        $testObj = Get-IMobject -Attribute name -ResourceType Person -AttributeValue "Yalla" -verbose
+        $testObj = Get-IMobject -Attribute name -ResourceType Person -AttributeValue "Yalla"
 
         It "Should call Set-Variable once" {
             Assert-MockCalled Set-Variable -Exactly 1

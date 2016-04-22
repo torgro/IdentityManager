@@ -1,17 +1,17 @@
-﻿$here = Split-Path -Parent $MyInvocation.MyCommand.Path
+﻿$here = Split-Path -Parent $MyInvocation.MyCommand.Path | split-path -parent
 $sut = (Split-Path -Leaf $MyInvocation.MyCommand.Path).Replace(".Tests.", ".")
-. "$here\$sut"
+. "$here\functions\$sut"
 
 $PSBoundParameters.clear()
 
-import-module .\PowerFIM.psd1 -verbose:$false
+Import-module .\IdentityManager.psd1 -verbose:$false
 Import-Module .\FIMmodule\FIMmodule.psd1 -Scope Global -verbose:$false
 
-Describe "Get-FIMset" {
+Describe "Get-IMset" {
 
     Context "Parameter validation" {
         
-        $cmdlet = Get-Command -Name Get-FIMset
+        $cmdlet = Get-Command -Name Get-IMset
         $ParamSetsCount = $cmdlet.ParameterSets.Count
 
         $MandatoryParams = $cmdlet.ParameterSets | foreach { 
@@ -73,54 +73,54 @@ Describe "Get-FIMset" {
    }
 
     Context "Parameter logic validation" {
-        Mock Get-FIMobject { $null } -Verifiable
+        Mock Get-IMobject { $null } -Verifiable
 
         It "No parameters should throw" {
-            { Get-FIMset } | Should throw
+            { Get-IMset } | Should throw
         }
 
         It "Should throw if both DisplayName and ObjectID is given" {
-            { Get-FIMset -DisplayName "dummy set" -ObjectID "notpossibletoday"  } | Should throw
+            { Get-IMset -DisplayName "dummy set" -ObjectID "notpossibletoday"  } | Should throw
         }
         
         It "Should trow if Attribute and DisplayName is given" {
-            { Get-FIMset -Attribute Balle -DisplayName "Testset"} | should throw
+            { Get-IMset -Attribute Balle -DisplayName "Testset"} | should throw
         }
 
         It "Should NOT throw if DisplayName is given" {
-            { Get-FIMset -DisplayName "yall" } | Should not throw
+            { Get-IMset -DisplayName "yall" } | Should not throw
         }
 
         It "Should NOT throw if ObjectID is given" {
-            { Get-FIMset -ObjectID "yall" } | Should not throw
+            { Get-IMset -ObjectID "yall" } | Should not throw
         }
     }
 
     Context "Adding credentials" {
         
-        Mock Get-FIMobject { $null } -Verifiable 
+        Mock Get-IMobject { $null } -Verifiable 
 
         $cred = [System.Management.Automation.PSCredential]::Empty
 
         It "No credentials should not throw" {
-            { Get-FIMset -DisplayName "yalla" } | Should Not throw
+            { Get-IMset -DisplayName "yalla" } | Should Not throw
         }
 
         It "Should only call Get-FIMobject once" {
-            Assert-MockCalled Get-FIMobject -Exactly 1
+            Assert-MockCalled Get-IMobject -Exactly 1
         }
 
         It "With credentials should not throw" {
-            { Get-FIMset -DisplayName "yalla" -Credential $cred} | Should Not throw
+            { Get-IMset -DisplayName "yalla" -Credential $cred} | Should Not throw
         }        
     }
 
     Context "Added credentials should be forwarded" {
-        Mock Get-FIMobject {return $Credential} -Verifiable
+        Mock Get-IMobject {return $Credential} -Verifiable
 
         $cred = [System.Management.Automation.PSCredential]::Empty
 
-        $testcred = Get-FIMset -DisplayName yalla -Credential $cred
+        $testcred = Get-IMset -DisplayName yalla -Credential $cred
 
         It "Should return an object" {
             $testcred | Should not be $null
@@ -132,10 +132,10 @@ Describe "Get-FIMset" {
     }
 
     Context "Added URI should be forwareded" {
-        Mock Get-FIMobject {return $uri} -Verifiable
-        $uri = "http://fimserver"
+        Mock Get-IMobject {return $uri} -Verifiable
+        $uri = "http://imserver"
 
-        $testuri =  Get-FIMset -DisplayName yalla -uri $uri
+        $testuri =  Get-IMset -DisplayName yalla -uri $uri
 
         It "Should return an object" {
             $testuri | Should not be $null
@@ -150,43 +150,42 @@ Describe "Get-FIMset" {
         }
     }
 
-    Context "Mock Get-FIMobject with data" {
+    Context "Mock Get-IMobject with data" {
        
-        Mock Get-FIMobject {
+        Mock Get-IMobject {
             $obj = New-Object Microsoft.ResourceManagement.Automation.ObjectModel.ExportObject
-            $obj.ResourceManagementObject = New-Object Microsoft.ResourceManagement.Automation.ObjectModel.ResourceManagementObject
+            $obj.ResourceManagementObject = New-Object -TypeName Microsoft.ResourceManagement.Automation.ObjectModel.ResourceManagementObject
             $obj.ResourceManagementObject.ObjectType = "Set"
-            $obj = $obj | ConvertTo-GUID
+            $attr = New-Object -TypeName Microsoft.ResourceManagement.Automation.ObjectModel.ResourceManagementAttribute
+            $attr.AttributeName = "ObjectType"
+            $attr.Value = "Set"
+            $null = $obj.ResourceManagementObject.ResourceManagementAttributes = (,$attr)
+            $obj = $obj | Out-IMattribute
             return $obj
         }
 
-        $result = Get-FIMset -DisplayName "yall"
-        if(-not $result)
-        {
-            Write-warning -Message "Result is null"
-            break
-        }
+        $result = Get-IMset -DisplayName "yall"
 
         It "Should return an PSCustomObject" {
             $result -is [PSCustomObject] | Should Be $true
-
+        }
         It "ObjectType should be set" {                
             $result.ObjectType -eq "Set" | Should be $true
         }
     }
 
-    Context "Mock Get-FIMobject return null" {
+    Context "Mock Get-IMobject return null" {
         
-        Mock Get-FIMobject {$null}
+        Mock Get-IMobject { $null }
 
-        $result = Get-FIMset -DisplayName "yall"
+        $result = Get-IMset -DisplayName "yall"
 
         It "Should be equal to null" {                
             $result | Should Be $null
         }
 
         It "Should not throw" {                
-            { Get-FIMset -DisplayName "yall" } | Should not throw
+            { Get-IMset -DisplayName "yall" } | Should not throw
         }
 
     }

@@ -1,17 +1,17 @@
 ﻿function Set-IMset
 { 
 [cmdletbinding(
-    DefaultParameterSetName='ByObject',
+    DefaultParameterSetName='ByObjectID',
     SupportsShouldProcess=$true
 )]
 Param(
-    [Parameter(Mandatory=$true, ValueFromPipeline, ParameterSetName='ByObject', Position=0)]
+    [Parameter(Mandatory=$false, ValueFromPipeline, ParameterSetName='ByObject', Position=0)]
     [Parameter(Mandatory=$false, ValueFromPipeline, ParameterSetName='WithFilterAndObject')]
     [Parameter(Mandatory=$false, ValueFromPipeline, ParameterSetName='WithXMLFilterAndObject')]
     [pscustomobject]
     $SetObject
     ,
-    [Parameter(Mandatory=$true,ParameterSetName='ByObjectID', Position=0)]
+    [Parameter(Mandatory=$false,ParameterSetName='ByObjectID', Position=0)]
     [Parameter(Mandatory=$false, ParameterSetName='WithFilterAndID')]
     [Parameter(Mandatory=$false, ParameterSetName='WithXMLFilterAndID')]
     [string]$ObjectID
@@ -80,6 +80,10 @@ PROCESS {
     if($PSBoundParameters.ContainsKey("DisplayName"))
     {
         $ChangeAttributes.DisplayName = $DisplayName
+        If($PSBoundParameters.ContainsKey("ObjectID") -eq $false -and $PSBoundParameters.ContainsKey("SetObject") -eq $false)
+        {
+            throw "Specify an SetObject or an ObjectID"
+        }
     }
 
     if ($PSBoundParameters.ContainsKey("Filter"))

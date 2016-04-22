@@ -1,7 +1,8 @@
 ﻿function Get-IMPerson
 {
-[cmdletbinding()]
+[cmdletbinding(DefaultParameterSetName="None")]
 Param(
+    [Parameter(ParameterSetName='ByDisplayName')]
     [string]$DisplayName
     ,
     [Parameter(ParameterSetName='ByObjectID')]
@@ -19,8 +20,10 @@ Param(
     [Parameter(ParameterSetName='ByOrgUnit')]
     [string]$OrgUnitCode
     ,
+    [Parameter(ParameterSetName='ByAttribute')]
     [string]$Attribute
     ,
+    [Parameter(ParameterSetName='ByAttribute')]
     [string]$AttributeValue
     ,
     [pscredential]$Credential
