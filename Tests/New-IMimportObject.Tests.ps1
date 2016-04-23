@@ -53,7 +53,7 @@ Describe "New-IMimportObject" {
         $ObjectType = "BindingDescription"
         $ImpState = "Create"
 
-        $impObj = New-IMimportObject -ObjectType BindingDescription -ImportState Create
+        $impObj = New-IMimportObject -ObjectType $ObjectType -ImportState $ImpState
 
         It "ImportObject should not be 'null'" {
             { $impObj } | Should not be $null
@@ -69,7 +69,11 @@ Describe "New-IMimportObject" {
 
         It "Import object should have 'one' change" {
             $impObj.Changes.Count | Should be 0
-        }      
+        }
+        
+        It "Import object SourceObjectIdentifier should not be null" {
+            $impObj.SourceObjectIdentifier | Should not be $null
+        }       
     }
 }
 Remove-Module fimmodule
