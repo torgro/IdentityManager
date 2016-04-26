@@ -155,6 +155,130 @@ End
 }   
 }
 
+function Get-IMObjectMember
+{
+[cmdletbinding(DefaultParameterSetName="none")]
+Param(
+    [Parameter(ValueFromPipeline,ParameterSetName='ByObject')]
+    $FIMobject
+    ,
+    [Parameter(ParameterSetName='ByDisplayName')]
+    [String]$DisplayName
+    ,
+    [Parameter(ParameterSetName='ByObjectID')]
+    [string]$ObjectID
+    ,
+    [Parameter(ParameterSetName='ByObjectID')]
+    [Parameter(ParameterSetName='ByDisplayName')]
+    [ValidateSet("Set","Group")]
+    [String]$ObjectType
+    ,
+    [switch]$ComputedMembers
+    ,
+    [switch]$ExplicitMembers
+    ,
+    [pscredential]$Credential
+    ,
+    [string]$uri = "http://localhost:5725/ResourceManagementService"
+)
+BEGIN
+{
+    $f = $MyInvocation.InvocationName
+    Write-Verbose -Message "$f - START"
+}
+
+PROCESS
+{
+    $GetFimObject = @{}
+    $GetFIMSet = @{}
+    
+    $GetFimXpath = @{
+        CompareOperator = "="
+    }
+    
+    $BaseParam = @{
+        Uri = $uri
+    }
+    
+    if($PSBoundParameters.ContainsKey("Credential"))
+    {
+        $null = $BaseParam.Add("Credential", $Credential)        
+    }
+    If($PSBoundParameters.ContainsKey("DisplayName"))
+    {
+        Write-Verbose -Message "$f -  Setting displayname"
+        $null = $GetFimXpath.Add("FieldValues",@{DisplayName="$DisplayName"})   
+        $null = $GetFIMSet.Add("DisplayName",$DisplayName)
+    }
+    if($PSBoundParameters.ContainsKey("FIMobject"))
+    {
+        $ObjectID = $FIMobject.ObjectID
+        $ObjectType = $FIMobject.ObjectType
+    }
+    
+    if($ObjectID)
+    {
+        Write-Verbose -Message "$f -  Setting ObjectID"
+        $ObjectID = $ObjectID | ConvertTo-GUID
+        $null = $GetFimXpath.Add("FieldValues",@{ObjectID="$ObjectID"})
+        $null = $GetFIMSet.Add("ObjectID",($ObjectID | ConvertTo-GUID))
+    }
+    
+    [string]$MemberType = "/ComputedMember"
+    
+    if($PSBoundParameters.ContainsKey("ComputedMembers") -eq $false -and $PSBoundParameters.ContainsKey("ExplicitMembers") -eq $false)
+    {
+        Write-Verbose -Message "$f -  Outputing computermembers (all)"
+        [string]$query = (Get-IMXPathQuery @GetFimXpath -ObjectType $ObjectType) + $MemberType
+        
+        Write-Verbose -Message "$F -  Running this query [$query]"
+
+        $null = $GetFimObject.Add("Xpath",$query)
+        Get-IMobject @GetFimObject @BaseParam
+    }
+
+    if($PSBoundParameters.ContainsKey("ExplicitMembers"))
+    {
+        $MemberType = "/ExplicitMember"
+        Write-Verbose -Message "$f -  Outputing manually managed members"
+        [string]$query = (Get-IMXPathQuery @GetFimXpath -ObjectType $ObjectType) + $MemberType
+        
+        Write-Verbose -Message "$F -  Running this query [$query]"
+        $null = $GetFimObject.Add("Xpath",$query)
+        Get-IMobject @GetFimObject @BaseParam
+    }
+    
+    if($PSBoundParameters.ContainsKey("ComputedMembers"))
+    {
+        Write-Verbose -Message "$f -  Finding members by filter"
+        if(-not $FIMobject)
+        {
+            Write-Verbose -Message "$f -  Finding set [$DisplayName $objectID]"
+            $FIMobject = Get-IMSet @GetFIMSet @BaseParam            
+        }
+        if($FIMobject)
+        {
+            Write-Verbose -Message "$f -  Have FIMobject, getting filter"
+            [string]$filter = $FIMobject.Filter
+            $filterXML = [xml]$filter
+            Write-Verbose -Message "$f -  XPATH filter is [$($filterXML.Filter.InnerText)]"
+            $null = $GetFimObject.Add("Xpath",$filterXML.Filter.InnerText)
+            Get-IMObject @GetFimObject @BaseParam
+        }
+        else
+        {
+            Write-Verbose -Message "$f -  FIMobject is null"
+        }
+    }    
+}
+
+END
+{
+    Write-Verbose -Message "$f - END"
+}
+}
+
+
 function Get-IMPerson
 {
 [cmdletbinding(DefaultParameterSetName="None")]
@@ -262,6 +386,76 @@ END {
     
 }
 
+function Get-IMSecurityGroup
+{
+[cmdletbinding()]
+Param(
+    [string]$DisplayName
+    ,
+    [Parameter(ParameterSetName='ByObjectID')]
+    [string]$ObjectID
+    ,
+    [pscredential]$Credential
+    ,
+    [string]$uri = "http://localhost:5725/ResourceManagementService"
+    ,
+    [switch]$AllRelated
+)
+
+BEGIN 
+{
+    $f = $MyInvocation.InvocationName
+    Write-Verbose -Message "$f - START" 
+    
+    $splat = @{
+        uri = $uri
+        ResourceType = "Group"
+        ErrorAction = [System.Management.Automation.ActionPreference]::SilentlyContinue
+    }
+}
+    
+PROCESS
+{
+    if($PSBoundParameters.ContainsKey("DisplayName"))
+    { 
+        $null = $splat.Add("Attribute", "DisplayName")
+        $null = $splat.Add("AttributeValue","$DisplayName")
+    }
+
+    if($PSBoundParameters.ContainsKey("ObjectID"))
+    {         
+        $null = $splat.Add("Attribute", "ObjectID")
+        $null = $splat.Add("AttributeValue","$ObjectID")
+    }    
+
+    if($PSBoundParameters.ContainsKey("Credential"))
+    {
+        Write-Verbose -Message "$f -  Credentials provided, adding to splat"
+        $null = $splat.Add("Credential",$Credential)
+    }
+
+    if ($PSBoundParameters.ContainsKey("AllRelated"))
+    { 
+        Write-Verbose -Message "$f -  AllRelated specified, adding to splat"
+        $null = $splat.Add("AllRelated",$true)
+    }
+
+    $FIMobject = Get-IMobject @splat
+
+    if(-not $FIMobject)
+    {         
+        Write-Verbose "$f -  Get-FIMobject returned null objects of resourcetype $($splat.ResourceType)"
+    }
+    
+    $FIMobject
+}
+    
+END 
+{
+    Write-Verbose -Message "$f - END"
+}       
+}
+
 function Get-IMset
 {
 [cmdletbinding()]
@@ -339,6 +533,155 @@ PROCESS
     $IMobject
 } 
 
+END 
+{
+    Write-Verbose -Message "$f - END"
+}
+}
+
+function Get-IMSetUsage
+{
+[cmdletbinding()]
+Param(
+    [Parameter(ParameterSetName='ByDisplayName')]
+    [string]$DisplayName
+    ,
+    [Parameter(ParameterSetName='ByObjectID')]
+    [string]$ObjectID
+    ,
+    [Parameter(ParameterSetName='ByAttribute')]
+    [string]$Attribute
+    ,
+    [Parameter(ParameterSetName='ByAttribute')]
+    [string]$AttributeValue
+    ,
+    [pscredential]$Credential
+    ,
+    [string]$uri = "http://localhost:5725/ResourceManagementService"
+    ,
+    [switch]$AllRelated
+)
+    $f = $MyInvocation.InvocationName
+    Write-Verbose -Message "$f - START" 
+    
+    $splat = @{
+        uri = $uri
+        ResourceType = "Set"
+        ErrorAction = [System.Management.Automation.ActionPreference]::SilentlyContinue
+    }
+
+    $FIMobject = Get-IMSet @PSBoundParameters
+
+    if(-not $FIMobject)
+    {         
+        Write-Verbose "$f -  Get-IMobject returned null objects of resourcetype $($splat.ResourceType)"
+        break;
+    }
+
+    Write-Verbose -Message "$f -  Found set [$($FIMobject.DisplayName)], getting usage"
+    $SetGuid = $FIMobject.ObjectID | ConvertTo-GUID
+
+    if(-not $SetGuid)
+    {
+        [string]$msg = "$f -  Unable to find GUID"
+        Write-Verbose -Message $msg
+        Write-Error -Message $msg -ErrorAction Stop
+    }
+
+    $AllQuery = "/ManagementPolicyRule[ResourceFinalSet='$SetGuid' or ResourceCurrentSet='$SetGuid' or PrincipalSet='$SetGuid'] | /Set/ComputedMember[ObjectID='$SetGuid'] | /Group/ComputedMember[ObjectID='$SetGuid']"
+    
+    $GetIMObject = @{
+        uri = $uri
+        ErrorAction = [System.Management.Automation.ActionPreference]::SilentlyContinue
+        Xpath = $AllQuery
+    }
+    if($Credential)
+    {
+        Write-Verbose -Message "$f -  Credentials provided, adding to splat"
+        $null = $GetIMObject.Add("Credential",$Credential)
+    }
+    if ($AllRelated)
+    { 
+        Write-Verbose -Message "$f -  AllRelated specified, adding to splat"
+        $null = $GetIMObject.Add("AllRelated",$true)
+    }
+
+    Write-Verbose -Message "$f -  Running Get-IMObject"
+
+    $FIMobject = Get-IMobject @GetIMObject
+
+    if(-not $FIMobject)
+    {         
+        Write-Verbose "$f -  Get-IMobject returned null objects"
+    }
+
+    $FIMobject
+
+    Write-Verbose -Message "$f - END"
+    
+}
+
+Function Get-IMXPathQuery
+{
+[cmdletbinding()]
+Param(
+    [Parameter(Mandatory,ValueFromPipeLine)]
+    [hashtable]$FieldValues
+    ,    
+    [ValidateSet("Person","Set","Group")]
+    [string]$ObjectType
+    ,
+    [validateset("And","or")]
+    [string]$JoinOperator
+    ,
+    [ValidateSet("=","contains")]
+    [string]$CompareOperator = "="
+)
+
+BEGIN
+{
+    $f = $MyInvocation.InvocationName
+    Write-Verbose -Message "$f - START"
+    
+    if($PSBoundParameters.ContainsKey("ObjectType") -eq $false)
+    {
+        throw "ObjectType parameter is required"
+    }
+
+    $strBuilder = New-Object System.Text.StringBuilder
+    [string]$str = $null
+    
+}
+    
+PROCESS
+{    
+    $null = $strBuilder.Append("/$ObjectType[")
+
+    if($CompareOperator -eq "=")
+    {
+        foreach($key in $FieldValues.Keys)
+        {
+            $Value = $FieldValues["$key"]
+            $null = $strBuilder.Append("($key $CompareOperator '$value') $JoinOperator ")
+        }        
+    }
+
+    if($CompareOperator -eq "contains")
+    {
+        foreach($key in $FieldValues.Keys)
+        {
+            $Value = $FieldValues[$key]            
+            $null = $strBuilder.Append("(contains($key,'%$value%')) $JoinOperator ")
+        }        
+    }
+
+    $str = $strBuilder.ToString()
+    $str = $str.TrimEnd(" $JoinOperator")
+    $str = "$str]"
+
+    return $str
+}
+    
 END 
 {
     Write-Verbose -Message "$f - END"
@@ -587,6 +930,10 @@ PROCESS {
     if($PSBoundParameters.ContainsKey("DisplayName"))
     {
         $ChangeAttributes.DisplayName = $DisplayName
+        If($PSBoundParameters.ContainsKey("ObjectID") -eq $false -and $PSBoundParameters.ContainsKey("SetObject") -eq $false)
+        {
+            throw "Specify an SetObject or an ObjectID"
+        }
     }
 
     if ($PSBoundParameters.ContainsKey("Filter"))
