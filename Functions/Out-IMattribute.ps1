@@ -21,18 +21,28 @@ PROCESS
             Write-Verbose -Message "$f -  Now processing $(($object.ResourceManagementAttributes | where AttributeName -eq "DisplayName").Value)"
             $hash = @{}
             foreach($prop in $object.ResourceManagementAttributes)
-            {              
+            {                             
                 if($prop.IsMultiValue)
                 {
                     $null = $hash.Add($prop.AttributeName,$prop.Values)
                 }
                 else
                 {
-                    $null = $hash.Add($prop.AttributeName,$prop.Value)
+                    if($prop.AttributeName -eq "ObjectID")
+                    {
+                        $guid = ConvertTo-GUID -GUID $prop.Value
+                        $null = $hash.Add($prop.AttributeName, $guid)
+                    }
+                    else
+                    {
+                        $null = $hash.Add($prop.AttributeName,$prop.Value)
+                    }                    
                 }
             }
             $null = $hash.Add("ResourceManagementObject",$inputObject.ResourceManagementObject)
-            [pscustomobject]$hash
+            $output = [pscustomobject]$hash
+            $objectType = $output.ObjectType
+            $output.PSObject.TypeNames.Insert(0,"IM.$objectType")
         }
     }
     else
@@ -63,11 +73,21 @@ PROCESS
                         }
                         else
                         {
-                            $null = $hash.Add($prop.AttributeName,$prop.Value)
+                            if($prop.AttributeName -eq "ObjectID")
+                            {
+                                $guid = ConvertTo-GUID -GUID $prop.Value
+                                $null = $hash.Add($prop.AttributeName, $guid)
+                            }
+                            else
+                            {
+                                $null = $hash.Add($prop.AttributeName,$prop.Value)
+                            }        
                         }
                     }
                     $null = $hash.Add("ResourceManagementObject",$inputObject.ResourceManagementObject)
-                    [pscustomobject]$hash
+                    $output = [pscustomobject]$hash
+                    $objectType = $output.ObjectType
+                    $output.PSObject.TypeNames.Insert(0,"IM.$objectType")
                 }
             }
         }        
