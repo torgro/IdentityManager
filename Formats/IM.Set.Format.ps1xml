@@ -14,11 +14,11 @@
                     </TableColumnHeader>
                     <TableColumnHeader>
                         <Width>70</Width>
-                        <Alignment>right</Alignment>
+                        <Alignment>left</Alignment>
                     </TableColumnHeader>
                     <TableColumnHeader>
                         <Width>40</Width>
-                        <Alignment>right</Alignment>
+                        <Alignment>left</Alignment>
                     </TableColumnHeader>
                 </TableHeaders>
                 <TableRowEntries>

@@ -43,6 +43,7 @@ PROCESS
             $output = [pscustomobject]$hash
             $objectType = $output.ObjectType
             $output.PSObject.TypeNames.Insert(0,"IM.$objectType")
+            $output
         }
     }
     else
@@ -88,6 +89,7 @@ PROCESS
                     $output = [pscustomobject]$hash
                     $objectType = $output.ObjectType
                     $output.PSObject.TypeNames.Insert(0,"IM.$objectType")
+                    $output
                 }
             }
         }        

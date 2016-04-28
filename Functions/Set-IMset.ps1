@@ -90,7 +90,7 @@ PROCESS {
     { 
         if (-not $Filter.TrimStart().StartsWith("<"))
         { 
-            throw "Filter is not an XML, please use new-fimfilter to create an XML filter or use the XpathFilter parameter"
+            throw "Filter is not an XML, please use new-IMFilter to create an XML filter or use the XpathFilter parameter"
         }
         $ChangeAttributes.Filter = $Filter
     }
