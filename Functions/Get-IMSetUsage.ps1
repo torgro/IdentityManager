@@ -1,5 +1,27 @@
 ﻿function Get-IMSetUsage
 {
+<#
+.Synopsis
+   Find all resourcetypes that has referenced a Set.
+.DESCRIPTION
+   You can filter on the Set DisplayName, ObjectID, Attribute and AttributeValue. It will find Sets that is used as a critiera in other sets, groups
+   that is using the set as criteria and management policy rules that use the set for transistion in/out
+.EXAMPLE
+   Get-IMSetUsage Displayname "all Employees"
+   
+   Will output all sets, groups and management policy rules that refernence the set with displayname 'all employees'
+.EXAMPLE
+   Get-IMSetUsage -Attribute ObjectID -AttributeValue '0e64a52c-3696-4edc-b836-caf54888fbb7'
+   
+   Will output all sets, groups and management policy rules that refernence the set with ObjectID '0e64a52c-3696-4edc-b836-caf54888fbb7'
+.OUTPUTS
+   It outpus a PSCustomObject with the attribute bindings that is defined for the Person Object
+.COMPONENT
+   Identity Manager
+.FUNCTIONALITY
+   Identity Manager
+#>
+[OutputType([System.Management.Automation.PSCustomObject])]
 [cmdletbinding()]
 Param(
     [Parameter(ParameterSetName='ByDisplayName')]

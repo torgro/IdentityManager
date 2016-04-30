@@ -1,5 +1,30 @@
 ﻿function Get-IMSecurityGroup
 {
+<#
+.Synopsis
+   Get a Security Group object from Identity Manager. 
+.DESCRIPTION
+   You can filter on DisplayName or ObjectID
+.EXAMPLE
+   Get-IMSecurityGroup
+   
+   Will output all security groups from Identity Manager
+.EXAMPLE
+  Get-IMSecurityGroup -Displayname "Domain*"
+   
+   Will ouput all security groups that have Domain in their displayname
+.EXAMPLE
+  Get-IMPerson -ObjectID 0e64a52c-3696-4edc-b836-caf54888fbb7
+  
+  Will output the security group with id '0e64a52c-3696-4edc-b836-caf54888fbb7'
+.OUTPUTS
+   It outpus a PSCustomObject with the attribute bindings that is defined for the Person Object
+.COMPONENT
+   Identity Manager
+.FUNCTIONALITY
+   Identity Manager
+#>
+[OutputType([System.Management.Automation.PSCustomObject])]
 [cmdletbinding()]
 Param(
     [string]$DisplayName
@@ -56,7 +81,7 @@ PROCESS
 
     if(-not $FIMobject)
     {         
-        Write-Verbose "$f -  Get-FIMobject returned null objects of resourcetype $($splat.ResourceType)"
+        Write-Verbose "$f -  Get-IMobject returned null objects of resourcetype $($splat.ResourceType)"
     }
     
     $FIMobject

@@ -1,5 +1,30 @@
 ﻿function Get-IMset
 {
+<#
+.Synopsis
+   Get a Set object from Identity Manager. 
+.DESCRIPTION
+   You can filter on DisplayName, ObjectID, Attribute and AttributeValue
+.EXAMPLE
+   Get-IMset
+   
+   Will output all Sets from Identity Manager
+.EXAMPLE
+   Get-IMset -Displayname "all Employees"
+   
+   Will ouput the Set with the DisplayName 'all Employees'
+.EXAMPLE
+   Get-IMset -Attribute Creator -AttributeValue 'torgto'
+   
+   Will output sets with the Creator attribute set to 'torgto'
+.OUTPUTS
+   It outpus a PSCustomObject with the attribute bindings that is defined for the Person Object
+.COMPONENT
+   Identity Manager
+.FUNCTIONALITY
+   Identity Manager
+#>
+[OutputType([System.Management.Automation.PSCustomObject])]
 [cmdletbinding()]
 Param(
     [Parameter(ParameterSetName='ByDisplayName')]

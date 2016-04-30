@@ -1,5 +1,26 @@
 ﻿function Out-IMattribute
-{ 
+{
+<#
+.Synopsis
+   Creates a nice PSCustomObject of an Microsoft.ResourceManagement.Automation.ObjectModel.ResourceManagementObject.ResourceManagementAttributes object
+.DESCRIPTION
+   Each attribute is created as a root element in the PSCustomObject. It will also include the ResourceManagement object as a property.
+   It is also responsible for inserting the format typenames in the PSCustomObject.
+.EXAMPLE
+   $person = Get-IMPerson -AccountName torgto
+   
+   $person.ResourceManagement | Out-IMattribute
+   
+   Will output the same properties as $person has
+.OUTPUTS
+  It outpus a PSCustomObject with the attribute bindings that is defined for the Person Object
+.COMPONENT
+   Identity Manager
+.FUNCTIONALITY
+   Identity Manager
+#>
+[OutputType([System.Management.Automation.PSCustomObject])]
+[OutputType([string])]
 [cmdletbinding()]
 Param(
     [Parameter(ValueFromPipeline=$true)]

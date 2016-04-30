@@ -1,5 +1,30 @@
 ﻿function Get-IMObjectMember
 {
+<#
+.Synopsis
+   Get the member of a Set or a Group.
+.DESCRIPTION
+   If you do not use the ComputedMembers parameter or the ExplicitMembers parameter, all members will be returned.
+.EXAMPLE
+   Get-IMObjectMember -DisplayName "All Employees" -ObjectType Set
+   
+   Will output all persons that is a member of the Set 'All Employees'
+.EXAMPLE
+   Get-IMObjectMember -DisplayName "All Employees" -ObjectType Set -ComputedMembers
+   
+   Will output all persons that matches the filter/criteria of the Set. Manually managed members is not returned
+.EXAMPLE
+  Get-IMObjectMember -DisplayName "All Employees" -ObjectType Set -ExplicitMembers
+   
+   Will output all persons that is manually managed on the Set. Filter/criteria members is not returned
+.OUTPUTS
+   It outpus a PSCustomObject with the attribute bindings that is defined for the Person Object
+.COMPONENT
+   Identity Manager
+.FUNCTIONALITY
+   Identity Manager
+#>
+[OutputType([System.Management.Automation.PSCustomObject])]
 [cmdletbinding(DefaultParameterSetName="none")]
 Param(
     [Parameter(ValueFromPipeline,ParameterSetName='ByObject')]

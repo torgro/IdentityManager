@@ -1,6 +1,31 @@
 ﻿function Get-IMPerson
 {
-[cmdletbinding(DefaultParameterSetName="None")]
+<#
+.Synopsis
+   Get a Person object from Identity Manager. 
+.DESCRIPTION
+   You can filter on DisplayName, ObjectID, AccountName, EmployeeID, SocialSecutiryNumber and OrganizationalUnit
+.EXAMPLE
+   Get-IMPerson
+   
+   Will output all persons from Identity Manager
+.EXAMPLE
+   Get-IMPerson -Displayname "testperson*"
+   
+   Will ouput all persons that have testperson in their displayname
+.EXAMPLE
+  Get-IMPerson -AccountName torgto
+  
+  Will output the person with the accountname 'torgto'
+.OUTPUTS
+   It outpus a PSCustomObject with the attribute bindings that is defined for the Person Object
+.COMPONENT
+   Identity Manager
+.FUNCTIONALITY
+   Identity Manager
+#>
+[OutputType([System.Management.Automation.PSCustomObject])]
+[cmdletbinding(DefaultParameterSetName="none")]
 Param(
     [Parameter(ParameterSetName='ByDisplayName')]
     [string]$DisplayName

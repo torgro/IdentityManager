@@ -1,5 +1,31 @@
 ﻿function Get-IMPersonMembership
 {
+<#
+.Synopsis
+   Get a Persons membership in groups and sets. 
+.DESCRIPTION
+   You can filter on person with DisplayName, A personObject[PSCustomObject], AccountName or ObjectID
+.EXAMPLE
+   Get-IMPersonMembership -AccountName torgto
+   
+   Will output all security groups and sets the user 'torgto' is a member of
+.EXAMPLE
+   $person = Get-IMperson -AccountName torgto
+   Get-IMPersonMembership -FIMobject $person
+   
+   Will output all security groups and sets the user 'torgto' is a member of
+.EXAMPLE
+  Get-IMperson -AccountName torgto | Get-IMPersonMembership
+  
+  Will output all security groups and sets the user 'torgto' is a member of
+.OUTPUTS
+   It outpus a PSCustomObject with the attribute bindings that is defined for the Person Object
+.COMPONENT
+   Identity Manager
+.FUNCTIONALITY
+   Identity Manager
+#>
+[OutputType([System.Management.Automation.PSCustomObject])] 
 [cmdletbinding()]
 Param(
     [Parameter(ValueFromPipeline,ParameterSetName='ByObject')]

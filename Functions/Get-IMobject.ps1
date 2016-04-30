@@ -1,5 +1,30 @@
 ﻿function Get-IMobject
 {
+<#
+.Synopsis
+   A generic cmdlet desinged to do the communication with the Identity Manager Snap-In. It supports the most common used esourceTypes
+.DESCRIPTION
+   It supports the most common used ResourceTypes in Identity Manager. Please note that the Attribute parameter is casesensitive in 
+   Identity Manager. Displayname is not the same as DisplayName!
+.EXAMPLE
+   Get-IMobject -Attribute DisplayName -AttributeValue "testperson*" -ResourceType Person
+   
+   Will ouput all persons that have testperson in their displayname
+.EXAMPLE
+   Get-IMobject -Attribute AccountName -AttributeValue "torgto*" -ResourceType Person
+   
+   Will output the person with the accountname 'torgto'
+.EXAMPLE
+  Get-IMobject -Attribute DisplayName -AttributeValue "All Employees" -ResourceType Set
+  
+  Will output the Set with the DisplayName 'All Employees'
+.OUTPUTS
+   It outpus a PSCustomObject with the attribute bindings that is defined for the ResourceType
+.COMPONENT
+   Identity Manager
+.FUNCTIONALITY
+   Identity Manager
+#>
 [CmdletBinding()]
 Param(
     [Parameter(ParameterSetName='BuildQuery')]

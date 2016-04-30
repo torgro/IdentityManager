@@ -1,5 +1,33 @@
 ﻿Function Get-IMXPathQuery
 {
+<#
+.Synopsis
+   Create a XPath with a hashtable.
+.DESCRIPTION
+   You can create an XPath query for Person, Set and Group
+.EXAMPLE
+   $KeyValues = @{
+       DisplayName = "testperson"
+   }
+   $keyValues | Get-IMXPathQuery -ObjectType Person
+   
+   Will output the query "/Person[Displayname='testperson']"
+.EXAMPLE
+   $KeyValues = @{
+       Value=2
+       Name="hoho"
+    }
+   Get-IMXPathQuery -FieldValues $FieldValues -ObjectType "Group" -CompareOperator "=" -JoinOperator And
+   
+   Will output the query "/Group[(Name = 'hoho') And (Value = '2')]"
+.OUTPUTS
+   It outpus a string containing the Identity Manager XPath
+.COMPONENT
+   Identity Manager
+.FUNCTIONALITY
+   Identity Manager
+#>
+[OutputType([string])]
 [cmdletbinding()]
 Param(
     [Parameter(Mandatory,ValueFromPipeLine)]
