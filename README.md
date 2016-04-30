@@ -6,7 +6,6 @@ The module is work in progress as I am constantly adding stuff to it, including 
 
 Please leave feedback and report bug/issues. I am currently looking for beta-testers. Look me up or give it a spinn if you like!
 
-Cheers
 
 ## What is included
 
@@ -15,14 +14,14 @@ I am focusing in on the Get-cmdlets at the moment. Then I will start with Set-cm
 
 ## Operation validation
 
-This module will at some point be a requirement for my Operations Validation tests for Identity manager (part of my test initiave at https://github.com/torgro/PesterOperationTest)
+This module will at some point be a requirement for my Operations Validation tests for Identity manager (part of my test initiative at https://github.com/torgro/PesterOperationTest)
 
 
 ## Currently implemented Cmdlets
 
 Get-Cmdlets:
 
-* Get-IMObject 
+* Get-IMObject:
 A generic cmdlet used by all of the Get-Cmdlets. It is responsible for running the core cmdlets in the IM snap-in
 * Get-IMObjectMember
 Used to list members of a group/set. It can list ComputedMembers or ExplicitMembers
