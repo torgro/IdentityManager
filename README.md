@@ -4,7 +4,7 @@ This is a module for Identity Manager from Microsoft. The product it self comes 
 
 The module is work in progress as I am constantly adding stuff to it, including Pester tests. It will eventually become available in PowershellGallery for easy access and installation. 
 
-Please leave feedback and report bug/issues. I am currently looking for beta-testers. Look me up or give it a spinn if you like!
+Please leave feedback and report bug/issues. I am currently looking for beta-testers. Look me up or give it a spin if you like!
 
 
 ## What is included
@@ -19,7 +19,7 @@ This module will at some point be a requirement for my Operations Validation tes
 
 ## Currently implemented Cmdlets
 
-Get-Cmdlets:
+**Get-Cmdlets:**
 
 | Name                   | Description
 | -----------------------|:---------------------------------------------------------------------------------------------------------------------|
@@ -34,19 +34,19 @@ Get-Cmdlets:
 | Out-IMAttribute        | Cast a ResourceManagementObject to a PSCustomObject Used by the Get-IMObject cmdlet |
 
 
-Set-Cmdlets:
+**Set-Cmdlets:**
 
 * Set-IMset (not finished)
 Update a set with DisplayName, ExplicitMembers or filter
 
 
-New-Cmdlets:
+**New-Cmdlets:**
 
 * New-IMImportChange
 * New-IMImportObject
 
 
-Out-Cmdlets:
+**Out-Cmdlets:**
 * ConvertTo-Guid
 Converts a IM guid to a regular guid
 
