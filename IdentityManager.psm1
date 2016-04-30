@@ -34,6 +34,31 @@ END
 
 function Get-IMobject
 {
+<#
+.Synopsis
+   A generic cmdlet desinged to do the communication with the Identity Manager Snap-In. It supports the most common used esourceTypes
+.DESCRIPTION
+   It supports the most common used ResourceTypes in Identity Manager. Please note that the Attribute parameter is casesensitive in 
+   Identity Manager. Displayname is not the same as DisplayName!
+.EXAMPLE
+   Get-IMobject -Attribute DisplayName -AttributeValue "testperson*" -ResourceType Person
+   
+   Will ouput all persons that have testperson in their displayname
+.EXAMPLE
+   Get-IMobject -Attribute AccountName -AttributeValue "torgto*" -ResourceType Person
+   
+   Will output the person with the accountname 'torgto'
+.EXAMPLE
+  Get-IMobject -Attribute DisplayName -AttributeValue "All Employees" -ResourceType Set
+  
+  Will output the Set with the DisplayName 'All Employees'
+.OUTPUTS
+   It outpus a PSCustomObject with the attribute bindings that is defined for the ResourceType
+.COMPONENT
+   Identity Manager
+.FUNCTIONALITY
+   Identity Manager
+#>
 [CmdletBinding()]
 Param(
     [Parameter(ParameterSetName='BuildQuery')]
@@ -157,6 +182,31 @@ End
 
 function Get-IMObjectMember
 {
+<#
+.Synopsis
+   Get the member of a Set or a Group.
+.DESCRIPTION
+   If you do not use the ComputedMembers parameter or the ExplicitMembers parameter, all members will be returned.
+.EXAMPLE
+   Get-IMObjectMember -DisplayName "All Employees" -ObjectType Set
+   
+   Will output all persons that is a member of the Set 'All Employees'
+.EXAMPLE
+   Get-IMObjectMember -DisplayName "All Employees" -ObjectType Set -ComputedMembers
+   
+   Will output all persons that matches the filter/criteria of the Set. Manually managed members is not returned
+.EXAMPLE
+  Get-IMObjectMember -DisplayName "All Employees" -ObjectType Set -ExplicitMembers
+   
+   Will output all persons that is manually managed on the Set. Filter/criteria members is not returned
+.OUTPUTS
+   It outpus a PSCustomObject with the attribute bindings that is defined for the Person Object
+.COMPONENT
+   Identity Manager
+.FUNCTIONALITY
+   Identity Manager
+#>
+[OutputType([System.Management.Automation.PSCustomObject])]
 [cmdletbinding(DefaultParameterSetName="none")]
 Param(
     [Parameter(ValueFromPipeline,ParameterSetName='ByObject')]
@@ -281,7 +331,32 @@ END
 
 function Get-IMPerson
 {
-[cmdletbinding(DefaultParameterSetName="None")]
+<#
+.Synopsis
+   Get a Person object from Identity Manager. 
+.DESCRIPTION
+   You can filter on DisplayName, ObjectID, AccountName, EmployeeID, SocialSecutiryNumber and OrganizationalUnit
+.EXAMPLE
+   Get-IMPerson
+   
+   Will output all persons from Identity Manager
+.EXAMPLE
+   Get-IMPerson -Displayname "testperson*"
+   
+   Will ouput all persons that have testperson in their displayname
+.EXAMPLE
+  Get-IMPerson -AccountName torgto
+  
+  Will output the person with the accountname 'torgto'
+.OUTPUTS
+   It outpus a PSCustomObject with the attribute bindings that is defined for the Person Object
+.COMPONENT
+   Identity Manager
+.FUNCTIONALITY
+   Identity Manager
+#>
+[OutputType([System.Management.Automation.PSCustomObject])]
+[cmdletbinding(DefaultParameterSetName="none")]
 Param(
     [Parameter(ParameterSetName='ByDisplayName')]
     [string]$DisplayName
@@ -388,6 +463,32 @@ END {
 
 function Get-IMPersonMembership
 {
+<#
+.Synopsis
+   Get a Persons membership in groups and sets. 
+.DESCRIPTION
+   You can filter on person with DisplayName, A personObject[PSCustomObject], AccountName or ObjectID
+.EXAMPLE
+   Get-IMPersonMembership -AccountName torgto
+   
+   Will output all security groups and sets the user 'torgto' is a member of
+.EXAMPLE
+   $person = Get-IMperson -AccountName torgto
+   Get-IMPersonMembership -FIMobject $person
+   
+   Will output all security groups and sets the user 'torgto' is a member of
+.EXAMPLE
+  Get-IMperson -AccountName torgto | Get-IMPersonMembership
+  
+  Will output all security groups and sets the user 'torgto' is a member of
+.OUTPUTS
+   It outpus a PSCustomObject with the attribute bindings that is defined for the Person Object
+.COMPONENT
+   Identity Manager
+.FUNCTIONALITY
+   Identity Manager
+#>
+[OutputType([System.Management.Automation.PSCustomObject])] 
 [cmdletbinding()]
 Param(
     [Parameter(ValueFromPipeline,ParameterSetName='ByObject')]
@@ -462,6 +563,31 @@ END
 
 function Get-IMSecurityGroup
 {
+<#
+.Synopsis
+   Get a Security Group object from Identity Manager. 
+.DESCRIPTION
+   You can filter on DisplayName or ObjectID
+.EXAMPLE
+   Get-IMSecurityGroup
+   
+   Will output all security groups from Identity Manager
+.EXAMPLE
+  Get-IMSecurityGroup -Displayname "Domain*"
+   
+   Will ouput all security groups that have Domain in their displayname
+.EXAMPLE
+  Get-IMPerson -ObjectID 0e64a52c-3696-4edc-b836-caf54888fbb7
+  
+  Will output the security group with id '0e64a52c-3696-4edc-b836-caf54888fbb7'
+.OUTPUTS
+   It outpus a PSCustomObject with the attribute bindings that is defined for the Person Object
+.COMPONENT
+   Identity Manager
+.FUNCTIONALITY
+   Identity Manager
+#>
+[OutputType([System.Management.Automation.PSCustomObject])]
 [cmdletbinding()]
 Param(
     [string]$DisplayName
@@ -518,7 +644,7 @@ PROCESS
 
     if(-not $FIMobject)
     {         
-        Write-Verbose "$f -  Get-FIMobject returned null objects of resourcetype $($splat.ResourceType)"
+        Write-Verbose "$f -  Get-IMobject returned null objects of resourcetype $($splat.ResourceType)"
     }
     
     $FIMobject
@@ -532,6 +658,31 @@ END
 
 function Get-IMset
 {
+<#
+.Synopsis
+   Get a Set object from Identity Manager. 
+.DESCRIPTION
+   You can filter on DisplayName, ObjectID, Attribute and AttributeValue
+.EXAMPLE
+   Get-IMset
+   
+   Will output all Sets from Identity Manager
+.EXAMPLE
+   Get-IMset -Displayname "all Employees"
+   
+   Will ouput the Set with the DisplayName 'all Employees'
+.EXAMPLE
+   Get-IMset -Attribute Creator -AttributeValue 'torgto'
+   
+   Will output sets with the Creator attribute set to 'torgto'
+.OUTPUTS
+   It outpus a PSCustomObject with the attribute bindings that is defined for the Person Object
+.COMPONENT
+   Identity Manager
+.FUNCTIONALITY
+   Identity Manager
+#>
+[OutputType([System.Management.Automation.PSCustomObject])]
 [cmdletbinding()]
 Param(
     [Parameter(ParameterSetName='ByDisplayName')]
@@ -615,6 +766,28 @@ END
 
 function Get-IMSetUsage
 {
+<#
+.Synopsis
+   Find all resourcetypes that has referenced a Set.
+.DESCRIPTION
+   You can filter on the Set DisplayName, ObjectID, Attribute and AttributeValue. It will find Sets that is used as a critiera in other sets, groups
+   that is using the set as criteria and management policy rules that use the set for transistion in/out
+.EXAMPLE
+   Get-IMSetUsage Displayname "all Employees"
+   
+   Will output all sets, groups and management policy rules that refernence the set with displayname 'all employees'
+.EXAMPLE
+   Get-IMSetUsage -Attribute ObjectID -AttributeValue '0e64a52c-3696-4edc-b836-caf54888fbb7'
+   
+   Will output all sets, groups and management policy rules that refernence the set with ObjectID '0e64a52c-3696-4edc-b836-caf54888fbb7'
+.OUTPUTS
+   It outpus a PSCustomObject with the attribute bindings that is defined for the Person Object
+.COMPONENT
+   Identity Manager
+.FUNCTIONALITY
+   Identity Manager
+#>
+[OutputType([System.Management.Automation.PSCustomObject])]
 [cmdletbinding()]
 Param(
     [Parameter(ParameterSetName='ByDisplayName')]
@@ -697,6 +870,34 @@ Param(
 
 Function Get-IMXPathQuery
 {
+<#
+.Synopsis
+   Create a XPath with a hashtable.
+.DESCRIPTION
+   You can create an XPath query for Person, Set and Group
+.EXAMPLE
+   $KeyValues = @{
+       DisplayName = "testperson"
+   }
+   $keyValues | Get-IMXPathQuery -ObjectType Person
+   
+   Will output the query "/Person[Displayname='testperson']"
+.EXAMPLE
+   $KeyValues = @{
+       Value=2
+       Name="hoho"
+    }
+   Get-IMXPathQuery -FieldValues $FieldValues -ObjectType "Group" -CompareOperator "=" -JoinOperator And
+   
+   Will output the query "/Group[(Name = 'hoho') And (Value = '2')]"
+.OUTPUTS
+   It outpus a string containing the Identity Manager XPath
+.COMPONENT
+   Identity Manager
+.FUNCTIONALITY
+   Identity Manager
+#>
+[OutputType([string])]
 [cmdletbinding()]
 Param(
     [Parameter(Mandatory,ValueFromPipeLine)]
@@ -821,7 +1022,28 @@ Param(
 }
 
 function Out-IMattribute
-{ 
+{
+<#
+.Synopsis
+   Creates a nice PSCustomObject of an Microsoft.ResourceManagement.Automation.ObjectModel.ResourceManagementObject.ResourceManagementAttributes object
+.DESCRIPTION
+   Each attribute is created as a root element in the PSCustomObject. It will also include the ResourceManagement object as a property.
+   It is also responsible for inserting the format typenames in the PSCustomObject.
+.EXAMPLE
+   $person = Get-IMPerson -AccountName torgto
+   
+   $person.ResourceManagement | Out-IMattribute
+   
+   Will output the same properties as $person has
+.OUTPUTS
+  It outpus a PSCustomObject with the attribute bindings that is defined for the Person Object
+.COMPONENT
+   Identity Manager
+.FUNCTIONALITY
+   Identity Manager
+#>
+[OutputType([System.Management.Automation.PSCustomObject])]
+[OutputType([string])]
 [cmdletbinding()]
 Param(
     [Parameter(ValueFromPipeline=$true)]
