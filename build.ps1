@@ -172,6 +172,13 @@ if((Test-Path -Path $ManifestName -ErrorAction SilentlyContinue) -eq $true)
     Remove-Item -Path $ManifestName
 }
 
+$FormatsToProcess = New-Object -TypeName System.Collections.ArrayList
+foreach($file in (Get-ChildItem -Path "$PSScriptRoot\formats"))
+{
+    Write-Verbose -Message "Adding formats file $($file.FullName)"
+    $null = $FormatsToProcess.Add($file.FullName)
+}
+
 Write-Verbose -Message "$f -  Creating manifestfile"
 
 $newModuleManifest = @{
@@ -185,6 +192,7 @@ $newModuleManifest = @{
     Description = "$description"
     PowerShellVersion = "4.0"
     ProjectUri = "https://github.com/torgro/IdentityManager"
+    FormatsToProcess = $FormatsToProcess.ToArray()
 }
 
 New-ModuleManifest @newModuleManifest -NestedModules @("FIMmodule\FIMmodule.psd1")

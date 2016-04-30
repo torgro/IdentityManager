@@ -12,10 +12,10 @@
 RootModule = 'IdentityManager.psm1'
 
 # Version number of this module.
-ModuleVersion = '1.0.11.0'
+ModuleVersion = '1.0.12.0'
 
 # ID used to uniquely identify this module
-GUID = 'b6da4832-e1de-4e30-bc54-41dfa09fd14b'
+GUID = 'a8f6ca7e-5415-417c-8202-ca9e1ae10cfe'
 
 # Author of this module
 Author = 'Tore Grøneng @toregroneng tore@firstpoint.no'
@@ -60,7 +60,9 @@ PowerShellVersion = '4.0'
 # TypesToProcess = @()
 
 # Format files (.ps1xml) to be loaded when importing this module
-# FormatsToProcess = @()
+FormatsToProcess = 'formats\IM.Attribute.Format.ps1xml', 
+               'formats\IM.Group.Format.ps1xml', 'formats\IM.Person.Format.ps1xml', 
+               'formats\IM.Set.Format.ps1xml'
 
 # Modules to import as nested modules of the module specified in RootModule/ModuleToProcess
 NestedModules = @('FIMmodule\FIMmodule.psd1')
