@@ -21,25 +21,17 @@ This module will at some point be a requirement for my Operations Validation tes
 
 Get-Cmdlets:
 
-* Get-IMObject:
-
-A generic cmdlet used by all of the Get-Cmdlets. It is responsible for running the core cmdlets in the IM snap-in
-* Get-IMObjectMember
-Used to list members of a group/set. It can list ComputedMembers or ExplicitMembers
-* Get-IMPerson
-Get person information
-* Get-IMPersonMembership
-Show person membership in Groups/sets
-* Get-IMSecurityGroup
-Show information about Security groups in IM
-* Get-IMSet
-Show information about Sets in IM
-* Get-IMSetUsage
-Show all related usage of a Set in IM
-* Get-IMXPathQuery
-Create simple XPath queries with hashtable
-* Out-IMAttribute
-Cast a ResourceManagementObject to a PSCustomObject Used by the Get-IMObject cmdlet
+| Name                   | Description
+| -----------------------|:---------------------------------------------------------------------------------------------------------------------|
+| Get-IMObject           | A generic cmdlet used by all of the Get-Cmdlets. It is responsible for running the core cmdlets in the IM snap-in |
+| Get-IMObjectMember     | Used to list members of a group/set. It can list ComputedMembers or ExplicitMembers |
+| Get-IMPerson           | Get person information |
+| Get-IMPersonMembership | Show person membership in Groups/sets |
+| Get-IMSecurityGroup    | Show information about Security groups in IM |
+| Get-IMSet              | Show information about Sets in IM |
+| Get-IMSetUsage         | Show all related usage of a Set in IM |
+| Get-IMXPathQuery       | Create simple XPath queries with hashtable |
+| Out-IMAttribute        | Cast a ResourceManagementObject to a PSCustomObject Used by the Get-IMObject cmdlet |
 
 
 Set-Cmdlets:
