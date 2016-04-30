@@ -22,6 +22,7 @@ This module will at some point be a requirement for my Operations Validation tes
 Get-Cmdlets:
 
 * Get-IMObject:
+
 A generic cmdlet used by all of the Get-Cmdlets. It is responsible for running the core cmdlets in the IM snap-in
 * Get-IMObjectMember
 Used to list members of a group/set. It can list ComputedMembers or ExplicitMembers
