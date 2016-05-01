@@ -18,6 +18,10 @@
   Get-IMobject -Attribute DisplayName -AttributeValue "All Employees" -ResourceType Set
   
   Will output the Set with the DisplayName 'All Employees'
+.EXAMPLE
+  Get-IMobject -Xpath "/Person[(AccountName = 'torgto')]"
+  
+  Will output the person with the accountname 'torgto'
 .OUTPUTS
    It outpus a PSCustomObject with the attribute bindings that is defined for the ResourceType
 .COMPONENT
@@ -25,6 +29,7 @@
 .FUNCTIONALITY
    Identity Manager
 #>
+[OutputType([System.Management.Automation.PSCustomObject])]
 [CmdletBinding()]
 Param(
     [Parameter(ParameterSetName='BuildQuery')]

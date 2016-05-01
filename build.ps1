@@ -9,6 +9,8 @@ Param(
     [switch]$LoadModule
     ,
     [string]$description = "Work with Microsoft Identity Manager with Powershell"
+    ,
+    [string]$ProjectUri = ""
 )
 END{
 
@@ -75,7 +77,7 @@ if((Test-Path -Path $moduleFileName -ErrorAction SilentlyContinue) -eq $true)
     $ver = (Get-Module $Modulename).Version
     Remove-FIMsnapin
     Remove-Module $ModuleName -Verbose:$false
-    #Remove-PSSnapin -Name FIMautomation -ErrorAction SilentlyContinue
+    
     Write-Verbose -Message "$f -  Removing previous version of $ModuleFileName"
     Remove-Item -Path $ModuleFileName
 }
@@ -191,8 +193,14 @@ $newModuleManifest = @{
     RootModule = "$ModuleFileName"
     Description = "$description"
     PowerShellVersion = "4.0"
-    ProjectUri = "https://github.com/torgro/IdentityManager"
+    ProjectUri = "$ProjectUri"
     FormatsToProcess = $FormatsToProcess.ToArray()
+}
+
+if($FormatsToProcess.count -gt 0)
+{
+    write-verbose -Message "$f -  Adding formats to process in manifest"
+    $null = $newModuleManifest.Add("FormatsToProcess",$FormatsToProcess.ToArray())
 }
 
 New-ModuleManifest @newModuleManifest -NestedModules @("FIMmodule\FIMmodule.psd1")
